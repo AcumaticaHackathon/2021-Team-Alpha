@@ -1,4 +1,5 @@
-﻿using PX.Common;
+﻿//using Customization;
+using PX.Common;
 using PX.Data;
 using PX.SM;
 using System;
@@ -6,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Customization
+namespace AcuChecker
 {
     public static class extensionclass
     {
@@ -21,7 +22,7 @@ namespace Customization
             return properties;
         }
     }
-    public class CustomizationChecker : CustomizationPlugin
+    public class CustomizationChecker //: CustomizationPlugin
     {
         private static MethodInfo logger;
         private static MethodInfo Logger
@@ -43,20 +44,20 @@ namespace Customization
         {
             return System.AppDomain.CurrentDomain.BaseDirectory;
         }
-        public override void UpdateDatabase()
-        {
-            var custDLLs = PXSelect<CustObject, Where<CustObject.name, Like<Required<CustObject.name>>, And<CustObject.type, Equal<Required<CustObject.type>>>>>.Select(new PXGraph(), "%.dll", "file").RowCast<CustObject>().ToList();
-            WriteLog(string.Format("Testing {0}", Assembly.GetExecutingAssembly().GetName().Name));
-            //Get all IBQL Tables to test SQL
-            foreach (var custDLL in custDLLs)
-                TestDLL(custDLL.Name);
+        //public override void UpdateDatabase()
+        //{
+        //    var custDLLs = PXSelect<CustObject, Where<CustObject.name, Like<Required<CustObject.name>>, And<CustObject.type, Equal<Required<CustObject.type>>>>>.Select(new PXGraph(), "%.dll", "file").RowCast<CustObject>().ToList();
+        //    AcuChecker.CustomizationChecker.WriteLog(string.Format("Testing {0}", Assembly.GetExecutingAssembly().GetName().Name));
+        //    //Get all IBQL Tables to test SQL
+        //    foreach (var custDLL in custDLLs)
+        //        AcuChecker.CustomizationChecker.TestDLL(custDLL.Name);
                 
-        }
+        //}
     
-        public static string TestDLL(string DLLName)
+        public static string TestDLL(string DLLName=null)
         {
             var retVal = "";
-            foreach (var row in GetInstances<IBqlTable>(DLLName.Replace(@"File#", GetPath())))
+            foreach (var row in GetInstances<IBqlTable>(DLLName?.Replace(@"File#", GetPath())))
             {
                 if (TestDAC(row.Value, out string msg))
                     WriteLog(msg, "color:green;");
@@ -66,23 +67,27 @@ namespace Customization
             }
             return retVal;
         }
-        
+        public static bool TestDAC(string table, out string error)
+        {
+            var Table = Type.GetType(table);
+            return TestDAC(Table, out error);
+        }
 
-        public static bool TestDAC(IBqlTable table, out string error)
+        public static bool TestDAC(Type table, out string error)
         {
             //Confirm via Reflection that the DAC is not a Virtual (Unbound) DAC
-            var test1 = table.GetType().CustomAttributes.Where(c => c.AttributeType.Name.Contains("Virtual")).Count() == 0;
+            var test1 = table.CustomAttributes.Where(c => c.AttributeType.Name.Contains("Virtual")).Count() == 0;
             //check that there are PXDB fields,e.g. PXDBString
-            var test2 = table.GetType().GetProperties().Where(p => p.CustomAttributes.Where(t => t.AttributeType.Name.Contains("DB")).Count() > 0).Count() > 0;
+            var test2 = table.GetProperties().Where(p => p.CustomAttributes.Where(t => t.AttributeType.Name.Contains("DB")).Count() > 0).Count() > 0;
             error = "";
             if (test1 && test2)
             {
                 //log what table we are testing
-                WriteLog(string.Format("Testing Table {0}", table.GetType().Name));
+                WriteLog(string.Format("Testing Table {0}", table.Name),"font-weight:bold");
                 try
                 {
                     //create dynamic PXSelect command
-                    var command = BqlCommand.Compose(typeof(Select<>), table.GetType());
+                    var command = BqlCommand.Compose(typeof(Select<>), table);
                     //creater view using PXSelect from above
                     var view = new PXView(new PXGraph(), true, BqlCommand.CreateInstance(command));
                     //Note: this test will only work if IsActive=true on all extensions being tested. You may need to publish, activate and publish again to fully test.
@@ -95,14 +100,14 @@ namespace Customization
 
                     //log successful test
                     //WriteLog(string.Format("Testing of Table {0} Successful", table.GetType().Name), "color:green");
-                    error = string.Format("Testing of Table {0} Successful", table.GetType().Name);
+                    error = string.Format("Testing of Table {0} Successful", table.Name);
                     return true;
                 }
                 catch (Exception ex)
                 {
                     //if error is generated then log using Red Text
                     //WriteLog(string.Format("Testing of Table {0} Unsuccessful with error {1}", table.GetType().Name, ex.Message), "color:red;");
-                    error = string.Format("Testing of Table {0} Unsuccessful with error {1}", table.GetType().Name, ex.Message);
+                    error = string.Format("Testing of Table {0} Unsuccessful with error {1}", table.Name, ex.Message);
                     return false;
                 }
             }
@@ -110,9 +115,9 @@ namespace Customization
             return false;
         }
 
-        private static Dictionary<string, T> GetInstances<T>(string dll = null)
+        private static Dictionary<string, Type> GetInstances<T>(string dll = null) 
         {
-            var retVal = new Dictionary<string, T>();
+            var retVal = new Dictionary<string, Type>();
             var dlls = string.IsNullOrWhiteSpace(dll) ? Assembly.GetExecutingAssembly().GetTypes() : Assembly.LoadFile(dll).GetTypes();
             foreach (var item in dlls)
             {
@@ -120,10 +125,10 @@ namespace Customization
                 if ((item.GetInterfaces().Contains(typeof(T)) && item.GetConstructor(Type.EmptyTypes) != null))
                 {
                     //Create Instance of T
-                    var entry = (T)Activator.CreateInstance(item);
+                    //var entry = (T)Activator.CreateInstance(item);
                     //if we don't already have one add to return 
-                    if (!retVal.Keys.Contains(entry.GetType().Name))
-                        retVal.Add(entry.GetType().Name, entry);
+                    if (!retVal.Keys.Contains(item.Name))//entry.GetType().Name))
+                        retVal.Add(item.Name,item);// entry.GetType().Name, entry.GetType());
                 }
                 else
                 {
@@ -132,10 +137,10 @@ namespace Customization
                     if ((BaseProperty?.GetInterfaces()?.Contains(typeof(T)) ?? false) && BaseProperty?.GetConstructor(Type.EmptyTypes) != null)
                     {
                         //Create Instance of T
-                        var entry = (T)Activator.CreateInstance(BaseProperty);
+                        //var entry = (T)Activator.CreateInstance(BaseProperty);
                         //if we don't already have one add to return 
-                        if (!retVal.Keys.Contains(entry.GetType().Name))
-                            retVal.Add(entry.GetType().Name, entry);
+                        if (!retVal.Keys.Contains(BaseProperty.Name))//entry.GetType().Name))
+                            retVal.Add(BaseProperty.Name, BaseProperty);// entry.GetType().Name, entry.GetType());
                     }
                 }
 
