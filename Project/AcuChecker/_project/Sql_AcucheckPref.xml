@@ -1,0 +1,6 @@
+﻿<Sql TableName="AcucheckPref" TableSchemaXml="#CDATA">
+    <CDATA name="TableSchemaXml"><![CDATA[<table name="AcucheckPref">
+  <col name="CompanyID" type="Int" default="Zero" />
+  <col name="EnableTests" type="Bit" raw-default="1" />
+</table>]]></CDATA>
+</Sql>

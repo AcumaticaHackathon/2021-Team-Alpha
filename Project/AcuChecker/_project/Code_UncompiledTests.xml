@@ -13,25 +13,28 @@ namespace AcuChecker
   //Customization plugin is used to execute custom actions after customization project was published  
   public class UncompiledTests : CustomizationPlugin
   {
-
+        
 
     //This method executed after customization was published and website was restarted.  
         public override void UpdateDatabase()
         {
-            //Get all IBQL Tables to test SQL
-            AcuChecker.CustomizationChecker.WriteLog("Test DAC Classes","font-weight:bold;font-size:xx-large;");
-            var custDLLs = PXSelect<CustObject, Where<CustObject.name, Like<Required<CustObject.name>>, And<CustObject.type, Equal<Required<CustObject.type>>>>>.Select(new PXGraph(), "%.dll", "file").RowCast<CustObject>().ToList();
-            foreach (var custDLL in custDLLs)
+            var setup = PXSelect<Acucheckpref>.Select(new PXGraph()).RowCast<Acucheckpref>().FirstOrDefault();  
+                if (setup?.EnableTests ?? true)
             {
-              if(AcuChecker.CustomizationChecker.DllExists(custDLL.Name))
-              {
-                AcuChecker.CustomizationChecker.WriteLog(string.Format("Testing {0}", custDLL.Name.Replace("File#","")),"font-weight:bold;font-size:x-large;");
-                AcuChecker.CustomizationChecker.TestDLL(custDLL.Name);
-              }
-            }
-            AcuChecker.CustomizationChecker.WriteLog(string.Format("Testing {0}", Assembly.GetExecutingAssembly().GetName().Name),"font-weight:bold;font-size:x-large;");
-            AcuChecker.CustomizationChecker.TestDLL(Assembly.GetExecutingAssembly().Location);
-                 
+                //Get all IBQL Tables to test SQL
+                AcuChecker.CustomizationChecker.WriteLog("Test DAC Classes", "font-weight:bold;font-size:xx-large;");
+                var custDLLs = PXSelect<CustObject, Where<CustObject.name, Like<Required<CustObject.name>>, And<CustObject.type, Equal<Required<CustObject.type>>>>>.Select(new PXGraph(), "%.dll", "file").RowCast<CustObject>().ToList();
+                foreach (var custDLL in custDLLs)
+                {
+                    if (AcuChecker.CustomizationChecker.DllExists(custDLL.Name))
+                    {
+                        AcuChecker.CustomizationChecker.WriteLog(string.Format("Testing {0}", custDLL.Name.Replace("File#", "")), "font-weight:bold;font-size:x-large;");
+                        AcuChecker.CustomizationChecker.TestDLL(custDLL.Name);
+                    }
+                }
+                AcuChecker.CustomizationChecker.WriteLog(string.Format("Testing {0}", Assembly.GetExecutingAssembly().GetName().Name), "font-weight:bold;font-size:x-large;");
+                AcuChecker.CustomizationChecker.TestDLL(Assembly.GetExecutingAssembly().Location);
+            }   
 
                 
         }

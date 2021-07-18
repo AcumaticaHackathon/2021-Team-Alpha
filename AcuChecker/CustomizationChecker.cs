@@ -53,17 +53,33 @@ namespace AcuChecker
         //        AcuChecker.CustomizationChecker.TestDLL(custDLL.Name);
                 
         //}
-    
-        public static string TestDLL(string DLLName=null)
+        public static bool DllExists(string DLLName)
         {
-            var retVal = "";
+            try
+            {
+                return System.IO.File.Exists(DLLName?.Replace(@"File#", GetPath()));
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public static List<Tuple<bool, string>> TestDLL(string DLLName=null)
+        {
+            List<Tuple<bool, string>> retVal = new List<Tuple<bool, string>>();
             foreach (var row in GetInstances<IBqlTable>(DLLName?.Replace(@"File#", GetPath())))
             {
                 if (TestDAC(row.Value, out string msg))
+                {
                     WriteLog(msg, "color:green;");
+                    retVal.Add(new Tuple<bool, string>(true, msg));// string.Format("{0}|{1}|{2}",DLLName,msg,true);
+                }
                 else
+                {
                     WriteLog(msg, "color:red;");
-                retVal += DLLName;
+                    retVal.Add(new Tuple<bool, string>(false, msg));//retVal += string.Format("{0}|{1}|{2}", DLLName, msg, false);
+                }
+                
             }
             return retVal;
         }

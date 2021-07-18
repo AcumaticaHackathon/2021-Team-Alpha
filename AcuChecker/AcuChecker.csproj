@@ -46,6 +46,9 @@
     <Reference Include="PX.Objects">
       <HintPath>..\..\..\..\Bin\PX.Objects.DLL</HintPath>
     </Reference>
+    <Reference Include="PX.Web.Customization">
+      <HintPath>..\..\..\..\Bin\PX.Web.Customization.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -53,9 +56,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\..\..\..\..\Dev\2021-Team-Alpha\CustomPlugin2.cs">
-      <Link>CustomPlugin2.cs</Link>
-    </Compile>
+    <Compile Include="Acucheckpref.cs" />
+    <Compile Include="CompanyMaintExt.cs" />
+    <Compile Include="CustomizationChecker.cs" />
+    <Compile Include="CustomPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
