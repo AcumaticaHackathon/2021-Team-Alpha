@@ -23,8 +23,11 @@ namespace AcuChecker
             var custDLLs = PXSelect<CustObject, Where<CustObject.name, Like<Required<CustObject.name>>, And<CustObject.type, Equal<Required<CustObject.type>>>>>.Select(new PXGraph(), "%.dll", "file").RowCast<CustObject>().ToList();
             foreach (var custDLL in custDLLs)
             {
-              AcuChecker.CustomizationChecker.WriteLog(string.Format("Testing {0}", custDLL.Name.Replace("File#","")),"font-weight:bold;font-size:x-large;");
-              AcuChecker.CustomizationChecker.TestDLL(custDLL.Name);
+              if(AcuChecker.CustomizationChecker.DllExists(custDLL.Name))
+              {
+                AcuChecker.CustomizationChecker.WriteLog(string.Format("Testing {0}", custDLL.Name.Replace("File#","")),"font-weight:bold;font-size:x-large;");
+                AcuChecker.CustomizationChecker.TestDLL(custDLL.Name);
+              }
             }
             AcuChecker.CustomizationChecker.WriteLog(string.Format("Testing {0}", Assembly.GetExecutingAssembly().GetName().Name),"font-weight:bold;font-size:x-large;");
             AcuChecker.CustomizationChecker.TestDLL(Assembly.GetExecutingAssembly().Location);
