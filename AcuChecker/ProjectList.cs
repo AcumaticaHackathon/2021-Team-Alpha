@@ -5,6 +5,7 @@ using AcuChecker;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
+using System.Web;
 
 namespace PX.SM
 {
@@ -25,7 +26,7 @@ namespace PX.SM
 
             PXLongOperation.StartOperation(this, delegate
             {
-                var messages = new List<string> { "Checking the customizations for missing SQL create statments" };
+                var messages = new List<string> { "Checking the customizations for missing SQL create statments\n" };
                 foreach (CustObject d in custDLLs)
                 {
                     string pName = "";
@@ -52,7 +53,7 @@ namespace PX.SM
                     }
                     else
                     {
-                        messages.Add($"Everything seems Ok in {d.Name}");
+                        messages.Add($"Everything seems Ok in {d.Name}\n");
                     }
                 }
                 PXLongOperation.ClearStatus(this);
