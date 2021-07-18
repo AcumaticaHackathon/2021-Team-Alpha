@@ -91,6 +91,7 @@ namespace AcuChecker
 
         public static bool TestDAC(Type table, out string error)
         {
+            try { 
             //Confirm via Reflection that the DAC is not a Virtual (Unbound) DAC
             var test1 = table.CustomAttributes.Where(c => c.AttributeType.Name.Contains("Virtual")).Count() == 0;
             //check that there are PXDB fields,e.g. PXDBString
@@ -99,7 +100,7 @@ namespace AcuChecker
             if (test1 && test2)
             {
                 //log what table we are testing
-                WriteLog(string.Format("Testing Table {0}", table.Name),"font-weight:bold");
+                WriteLog(string.Format("Testing Table {0}", table.Name), "font-weight:bold");
                 try
                 {
                     //create dynamic PXSelect command
@@ -127,7 +128,11 @@ namespace AcuChecker
                     return false;
                 }
             }
-
+            }
+            catch
+            {
+                error = "";
+            }
             return false;
         }
 

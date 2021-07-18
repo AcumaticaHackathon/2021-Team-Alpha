@@ -24,7 +24,7 @@ namespace PX.SM
             PXResultset<CustObject> custDACs = PXSelect<CustObject, Where<CustObject.type, Like<Required<CustObject.type>>>>.Select(Base, "DAC");
             PXResultset<CustProject> custProjects = PXSelect<CustProject>.Select(Base);
 
-            PXLongOperation.StartOperation(this, delegate
+            PXLongOperation.StartOperation(Base, delegate
             {
                 var messages = new List<string> { "Checking the customizations for missing SQL create statments\n" };
                 foreach (CustObject d in custDLLs)
@@ -42,7 +42,8 @@ namespace PX.SM
                         //= custProjects.FirstOrDefault(p => p.ProjID == d.ProjectID)?.Name;
                     }
                     messages.Add($"{pName}");
-                    var testDllResults = CustomizationChecker.TestDLL(d.Name);
+                    if (!CustomizationChecker.DllExists(d.Name)) { continue; }
+                     var testDllResults = CustomizationChecker.TestDLL(d.Name);
                     var errors = testDllResults.Where(t => t.Item1 == false).Select(t => t.Item2).ToList();
                     if (errors.Count() > 0)
                     {
