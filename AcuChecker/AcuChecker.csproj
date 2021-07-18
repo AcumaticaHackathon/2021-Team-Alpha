@@ -60,6 +60,7 @@
     <Compile Include="CompanyMaintExt.cs" />
     <Compile Include="CustomizationChecker.cs" />
     <Compile Include="CustomPlugin.cs" />
+    <Compile Include="ProjectList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
