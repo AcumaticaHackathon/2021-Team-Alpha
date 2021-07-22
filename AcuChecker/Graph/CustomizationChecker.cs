@@ -64,12 +64,12 @@ namespace AcuChecker
                 return false;
             }
         }
-        public static List<Tuple<bool, string>> TestDLL(string DLLName=null)
+        public static List<Tuple<bool, string>> TestDLL(PXGraph graph,string DLLName=null)
         {
             List<Tuple<bool, string>> retVal = new List<Tuple<bool, string>>();
             foreach (var row in GetInstances<IBqlTable>(DLLName?.Replace(@"File#", GetPath())))
             {
-                if (TestDAC(row.Value, out string msg))
+                if (TestDAC(graph,row.Value, out string msg))
                 {
                     WriteLog(msg, "color:green;");
                     retVal.Add(new Tuple<bool, string>(true, msg));// string.Format("{0}|{1}|{2}",DLLName,msg,true);
@@ -83,13 +83,28 @@ namespace AcuChecker
             }
             return retVal;
         }
-        public static bool TestDAC(string table, out string error)
+        public static bool TestDAC(PXGraph graph, string tableName, out string error)
         {
-            var Table = Type.GetType(table);
-            return TestDAC(Table, out error);
+            var Table = Type.GetType(tableName);
+            var baseStr = "";
+            var baseInt=-1;
+            var comp = tableName.Split('.');
+            List<string> copy = new List<string>();
+            while (Table==null)
+            {
+                baseInt += 1;
+                //List<string> copy = new List<string>(); ;
+                //for (int i = 0; i <= baseInt; i++)
+                //{
+                    copy.Add(comp[baseInt]);
+                //}
+                baseStr = string.Join(".", copy.ToArray());
+                Table = Type.GetType(string.Format("{0},{1}", tableName ,baseStr));
+            }
+            return TestDAC(graph,Table, out error);
         }
 
-        public static bool TestDAC(Type table, out string error)
+        public static bool TestDAC(PXGraph graph, Type table, out string error)
         {
             try { 
             //Confirm via Reflection that the DAC is not a Virtual (Unbound) DAC
@@ -106,7 +121,7 @@ namespace AcuChecker
                     //create dynamic PXSelect command
                     var command = BqlCommand.Compose(typeof(Select<>), table);
                     //creater view using PXSelect from above
-                    var view = new PXView(new PXGraph(), true, BqlCommand.CreateInstance(command));
+                    var view = new PXView(graph, true, BqlCommand.CreateInstance(command));
                     //Note: this test will only work if IsActive=true on all extensions being tested. You may need to publish, activate and publish again to fully test.
                     //Note: Alternative is to create methodology to activate extensions for the test. This would require refactoring that would make this testing engine not universal.
                     //Select first row of table.

@@ -57,13 +57,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Acucheckpref.cs" />
-    <Compile Include="CompanyMaintExt.cs" />
-    <Compile Include="CustomizationChecker.cs" />
-    <Compile Include="CustomPlugin.cs" />
-    <Compile Include="ProjectList.cs" />
+    <Compile Include="DACExt\CustProjectExt.cs" />
+    <Compile Include="DAC\Acucheckpref.cs" />
+    <Compile Include="GraphExt\CompanyMaintExt.cs" />
+    <Compile Include="Graph\CustomizationChecker.cs" />
+    <Compile Include="Other\CustomPlugin.cs" />
+    <Compile Include="GraphExt\ProjectList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
